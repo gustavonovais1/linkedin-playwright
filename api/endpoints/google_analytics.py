@@ -29,6 +29,16 @@ def analytics_engagement(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    Relatório de engajamento (GA4).
+    Parâmetros:
+    - metrics: métricas de engajamento (ex.: engagedSessions, engagementRate).
+    - dimensions: dimensões (ex.: date, deviceCategory).
+    - start_date, end_date: janela (padrão últimos 30 dias).
+    - limit, offset: paginação.
+    Retorna:
+    - Dados agregados de engajamento por dimensão.
+    """
     try:
         return engagement_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -44,6 +54,14 @@ def analytics_users(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    Relatório de usuários (GA4).
+    Parâmetros:
+    - metrics: métricas de usuários (ex.: activeUsers, newUsers).
+    - dimensions: dimensões (ex.: date, deviceCategory).
+    - start_date, end_date: janela padrão de 30 dias.
+    - limit, offset: paginação.
+    """
     try:
         return users_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -59,6 +77,14 @@ def analytics_events(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    Relatório de eventos (GA4).
+    Parâmetros:
+    - metrics: contagem e valor de eventos.
+    - dimensions: data, nome do evento, página.
+    - start_date, end_date: janela padrão de 30 dias.
+    - limit, offset: paginação.
+    """
     try:
         return events_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -74,6 +100,14 @@ def analytics_content(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    Relatório de conteúdo (GA4).
+    Parâmetros:
+    - metrics: page views, bounce rate etc.
+    - dimensions: date, pageTitle, pagePath.
+    - start_date, end_date: janela.
+    - limit, offset: paginação.
+    """
     try:
         return content_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -89,6 +123,14 @@ def analytics_ads(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    Relatório de ads (GA4).
+    Parâmetros:
+    - metrics: clicks, impressions, cost, ROAS etc.
+    - dimensions: date, campaignName, campaignId.
+    - start_date, end_date: janela.
+    - limit, offset: paginação.
+    """
     try:
         return ads_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -104,6 +146,14 @@ def analytics_promotions(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    Relatório de promoções (GA4).
+    Parâmetros:
+    - metrics: views/clicks de promoções e listas.
+    - dimensions: date, channel group.
+    - start_date, end_date: janela.
+    - limit, offset: paginação.
+    """
     try:
         return promotions_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -119,6 +169,14 @@ def analytics_ecommerce_items(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    E-commerce (itens) no GA4.
+    Parâmetros:
+    - metrics: itens comprados/vistos etc.
+    - dimensions: date, itemId, itemName, itemCategory.
+    - start_date, end_date: janela.
+    - limit, offset: paginação.
+    """
     try:
         return ecommerce_items_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -134,6 +192,14 @@ def analytics_ecommerce_revenue(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    E-commerce (receita) no GA4.
+    Parâmetros:
+    - metrics: receita, transações, médias.
+    - dimensions: date, channel group.
+    - start_date, end_date: janela.
+    - limit, offset: paginação.
+    """
     try:
         return ecommerce_revenue_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:
@@ -149,6 +215,14 @@ def analytics_ecommerce_funnel(
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user_oauth),
 ):
+    """
+    E-commerce (funil) no GA4.
+    Parâmetros:
+    - metrics: addToCarts, checkouts, purchases, taxas.
+    - dimensions: date, channel group.
+    - start_date, end_date: janela.
+    - limit, offset: paginação.
+    """
     try:
         return ecommerce_funnel_report(metrics, dimensions, start_date, end_date, limit, offset)
     except Exception as e:

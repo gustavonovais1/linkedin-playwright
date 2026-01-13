@@ -124,22 +124,22 @@ def _persist_post_insights(media: dict, insights: dict) -> tuple[bool, str | Non
         pl = media.get("permalink")
         mu = media.get("media_url")
         vals = {
-            "views": None,
-            "reach": None,
-            "saves": None,
-            "likes": None,
-            "comments": None,
-            "shares": None,
-            "total_interactions": None,
-            "follows": None,
-            "profile_visits": None,
-            "profile_activity": None,
-            "reposts": None,
-            "ig_reels_video_view_total_time": None,
-            "ig_reels_avg_watch_time": None,
-            "reels_skip_rate": None,
-            "facebook_views": None,
-            "crossposted_views": None,
+            "views": 0,
+            "reach": 0,
+            "saves": 0,
+            "likes": 0,
+            "comments": 0,
+            "shares": 0,
+            "total_interactions": 0,
+            "follows": 0,
+            "profile_visits": 0,
+            "profile_activity": 0,
+            "reposts": 0,
+            "ig_reels_video_view_total_time": 0,
+            "ig_reels_avg_watch_time": 0.0,
+            "reels_skip_rate": 0.0,
+            "facebook_views": 0,
+            "crossposted_views": 0,
         }
         data = insights.get("data") if isinstance(insights, dict) else []
         for item in (data or []):
@@ -158,7 +158,7 @@ def _persist_post_insights(media: dict, insights: dict) -> tuple[bool, str | Non
                     try:
                         vals[name] = float(val)
                     except Exception:
-                        pass
+                        vals[name] = 0.0
                 else:
                     try:
                         vals[name] = int(val)
@@ -166,7 +166,7 @@ def _persist_post_insights(media: dict, insights: dict) -> tuple[bool, str | Non
                         try:
                             vals[name] = int(float(val))
                         except Exception:
-                            pass
+                            vals[name] = 0
         s = get_session()
         obj = s.get(InsightsPost, mid)
         if obj is None:

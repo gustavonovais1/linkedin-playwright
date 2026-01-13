@@ -63,6 +63,91 @@ Principais endpoints:
 - `GET /ig/insights/posts` — métricas por mídia (`api\\endpoints\\instagram.py:21-32`)
 - `POST /ll/start?segments=updates,visitors,...` — inicia bot do LinkedIn (`api\\endpoints\\linkedin.py:6-8`)
 
+## Instagram (Graph API)
+- Prefixo: `/ig`. Endpoints sob `/ig/*` (autenticados).
+- Variáveis de ambiente obrigatórias:
+  - `META_GRAPH_BASE`, `PAGE_ID`, `IG_ACCOUNT_ID`, `META_CLIENT_ID`, `META_CLIENT_SECRET`
+- Endpoints principais:
+  - `GET /ig/profile` — Perfil do Instagram (campos configuráveis) (`api\\endpoints\\instagram.py:9-18`).
+  - `GET /ig/media` — Lista mídias com filtros de tipo e tempo (`api\\endpoints\\instagram.py:20-25`).
+    - Parâmetros: `fields` (ex.: `id,media_type,timestamp`), `limit`, `media_type` (`IMAGE,VIDEO,CAROUSEL_ALBUM`), `since`, `until`.
+  - `GET /ig/insights/profile` — Métricas agregadas do perfil por mês (`api\\endpoints\\instagram.py:27-35`).
+  - `GET /ig/insights/posts` — Métricas por mídia, agregadas, com persistência (`api\\endpoints\\instagram.py:37-48`).
+    - Métricas suportadas por tipo (ex.: `views,reach,likes,comments,shares,total_interactions,reposts` e métricas de Reels).
+  - `GET /ig/oauth/exchange_token` — Troca de token curto por longo prazo (`api\\endpoints\\instagram.py:50-59`).
+- Persistência:
+  - Perfil mensal: `instagram.insights_profile` (`services\\instagram.py:62-104`, `models\\models_instagram.py:6-31`).
+  - Posts: `instagram.insights_posts` (`services\\instagram.py:106-206`, `models\\models_instagram.py:33-63`).
+  - Regra: valores numéricos vazios são gravados como `0`/`0.0` (`services\\instagram.py:108-172`).
+- Exemplos:
+```
+# Perfil
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/profile?fields=id,username,name,followers_count"
+
+# Mídias de vídeo no período
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/media?fields=id,media_type,timestamp&media_type=VIDEO&limit=25&since=1730428800&until=1733110800"
+
+# Insights de posts
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/insights/posts?media_id=<MID>&metric=views,reach,likes,comments,shares,total_interactions,reposts"
+
+# Troca de token
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/oauth/exchange_token?fb_exchange_token=<TOKEN_CURTO>"
+```
+
+## LinkedIn Bot
+- Prefixo: `/ll`. Endpoint para acionar a automação de coleta.
+- Variáveis de ambiente relevantes:
+  - `DEFAULT_COMPANY_HREF`, `DEFAULT_SEGMENTS`, `DOWNLOADS_DIR`
+- Funcionamento:
+  - A automação navega pelos segmentos `updates, visitors, followers, competitors`, exporta relatórios e ingere para o banco (`bot\\linkedin\\src\\main.py:1-84`).
+  - Exportação e ingestão: `bot\\linkedin\\src\\profile.py:100-207`, `bot\\linkedin\\src\\profile.py:429-620`, `bot\\linkedin\\src\\ingest.py:1-429`.
+- Endpoint:
+  - `POST /ll/start?segments=updates,visitors,followers,competitors` — inicia o bot (`api\\endpoints\\linkedin.py:8-18`).
+- Persistência:
+  - Tabelas: `linkedin.followers`, `linkedin.updates`, `linkedin.visitors`, `linkedin.competitors` (`models\\models_linkedin.py:1-99`).
+  - Regra: valores numéricos vazios são gravados como `0`/`0.0` na ingestão (`bot\\linkedin\\src\\ingest.py:24-76`).
+- Exemplos:
+```
+# Iniciar coleta de todos os segmentos
+curl -X POST -H "Authorization: Bearer <jwt>" "http://localhost:8000/ll/start?segments=updates,visitors,followers,competitors"
+```
+
+## Viva Engage (Microsoft Graph)
+- Prefixo: `/ve`. Endpoints sob `/ve/*` (autenticados).
+- Variáveis de ambiente obrigatórias:
+  - `VE_DIRECTORY_TENANT_ID` — Tenant do Entra ID
+  - `VE_APPLICATION_CLIENT_ID` — Client ID da app registrada
+  - `VE_SECRET` — Client Secret
+- Autenticação:
+  - Client Credentials Flow. O endpoint `GET /ve/token` retorna o access token atual ou gera um novo e salva (`viva_engage.ve_tokens`) (`services\\viva_engage.py:13-52`, `api\\endpoints\\viva_engage.py:15-19`).
+- Endpoints principais:
+  - `GET /ve/communities` — Lista comunidades (Graph `employeeExperience/communities`) e persiste (`viva_engage.communities`) (`api\\endpoints\\viva_engage.py:21-35`).
+  - `GET /ve/communities/{community_id}` — Detalhes de uma comunidade específica (`api\\endpoints\\viva_engage.py:38-48`).
+  - Relatórios Yammer (CSV → JSON → persistência):
+    - `GET /ve/reports/yammer/groups/activity-counts` — série temporal Liked/Posted/Read por dia (`api\\endpoints\\viva_engage.py:52-64`).
+    - `GET /ve/reports/yammer/groups/activity-detail` — engajamento por comunidade (`api\\endpoints\\viva_engage.py:66-78`).
+    - `GET /ve/reports/yammer/users/activity-detail` — atividade por usuário (`api\\endpoints\\viva_engage.py:80-92`).
+    - `GET /ve/reports/yammer/devices/usage-detail` — uso de plataformas por usuário (`api\\endpoints\\viva_engage.py:94-106`).
+    - `GET /ve/reports/yammer/users/activity-counts` — usuários únicos por ação/dia (`api\\endpoints\\viva_engage.py:108-121`).
+- Parâmetros:
+  - `period`: `D7`, `D30`, `D90`, `D180` (default `D30`) para todos os relatórios de Yammer.
+- Persistência:
+  - `viva_engage.communities`, `viva_engage.report_groups_activity_counts`, `viva_engage.report_groups_activity_detail`, `viva_engage.report_user_activity_detail`, `viva_engage.report_device_usage_user_detail`, `viva_engage.report_user_activity_counts` (`models\\models_viva_engage.py:15-27`, `models\\models_viva_engage.py:28-40`, `models\\models_viva_engage.py:42-57`, `models\\models_viva_engage.py:59-76`, `models\\models_viva_engage.py:78-97`, `models\\models_viva_engage.py:99-111`).
+  - Regra de valores: campos numéricos vazios são gravados como `0` e flags “Yes/No” viram `1/0` (`services\\viva_engage.py:160-192`, `services\\viva_engage.py:194-233`, `services\\viva_engage.py:235-270`, `services\\viva_engage.py:272-306`, `services\\viva_engage.py:308-340`).
+- Rotas removidas:
+  - `/ve/test-token`, `/ve/communities/{id}/analytics`, `/ve/communities/{id}/conversations`, `/ve/analytics/engagement` — removidas por indisponibilidade/erro de segmento na Graph API (retornam 404) (`services\\viva_engage.py:102-131`).
+- Exemplos:
+```
+# Token
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/token"
+
+# Comunidades
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/communities?select=displayName,groupId&top=50"
+
+# Relatório Yammer (contagens da rede)
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/reports/yammer/groups/activity-counts?period=D30"
+```
+
 ## Google Analytics (GA4)
 - Prefixo: `/ga`. Endpoints sob `/ga/analytics/*` (autenticados).
 - Variável de ambiente obrigatória: `GA4_PROPERTY_ID`.
@@ -191,8 +276,9 @@ curl -X POST "http://localhost:8000/ll/start?segments=updates,visitors,followers
 
 ## Persistência de Dados
 - Volume do banco: `db_data` (`docker-compose.yml:62-67`)
-- Schemas criados na inicialização: `instagram` e `linkedin` (`db.py:18-22`)
+- Schemas criados na inicialização: `instagram`, `linkedin`, `"google_analytics"`, `"user"`, `"rd_station"`, `"viva_engage"` (`core\\db.py:20-27`)
 - Exports do LinkedIn ficam em `./bot/linkedin/downloads` e são ingeridos para tabelas como `linkedin.visitors`, `linkedin.followers`, etc. (`models\\models_linkedin.py:18-30`, `models\\models_linkedin.py:59-91`)
+- Regra de persistência para numéricos: quando a fonte retorna vazio, grava-se `0` (ou `0.0` para taxas/médias) em Instagram, RD Station, Google Analytics, LinkedIn e Viva Engage.
 
 
 ## Dicas e Solução de Problemas

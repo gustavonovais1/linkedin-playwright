@@ -23,6 +23,7 @@ with engine.begin() as conn:
     conn.execute(text('CREATE SCHEMA IF NOT EXISTS "google_analytics"'))
     conn.execute(text('CREATE SCHEMA IF NOT EXISTS "user"'))
     conn.execute(text('CREATE SCHEMA IF NOT EXISTS "rd_station"'))
+    conn.execute(text('CREATE SCHEMA IF NOT EXISTS "viva_engage"'))
 
 from models import *
 

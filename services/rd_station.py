@@ -21,6 +21,28 @@ RD_API_BASE = "https://api.rd.services/platform"
 
 _token_cache: Dict[str, Any] = {"access_token": None, "expires_at": 0}
 
+def _i0(v: Any) -> int:
+    try:
+        if v in (None, "", "null"):
+            return 0
+        return int(v)
+    except Exception:
+        try:
+            return int(float(str(v)))
+        except Exception:
+            return 0
+
+def _f0(v: Any) -> float:
+    try:
+        if v in (None, "", "null"):
+            return 0.0
+        return float(v)
+    except Exception:
+        try:
+            return float(str(v).replace(",", "."))
+        except Exception:
+            return 0.0
+
 
 def _env(name: str) -> str:
     v = os.environ.get(name)
@@ -166,18 +188,18 @@ def get_email_analytics(start_date: str, end_date: str) -> Dict[str, Any]:
             
             email_record.campaign_name = item.get("campaign_name")
             email_record.send_at = datetime.fromisoformat(item.get("send_at").replace("Z", "+00:00"))
-            email_record.email_dropped_count = item.get("email_dropped_count")
-            email_record.email_delivered_count = item.get("email_delivered_count")
-            email_record.email_bounced_count = item.get("email_bounced_count")
-            email_record.email_opened_count = item.get("email_opened_count")
-            email_record.email_clicked_count = item.get("email_clicked_count")
-            email_record.email_unsubscribed_count = item.get("email_unsubscribed_count")
-            email_record.email_spam_reported_count = item.get("email_spam_reported_count")
-            email_record.email_delivered_rate = item.get("email_delivered_rate")
-            email_record.email_opened_rate = item.get("email_opened_rate")
-            email_record.email_clicked_rate = item.get("email_clicked_rate")
-            email_record.email_spam_reported_rate = item.get("email_spam_reported_rate")
-            email_record.contacts_count = item.get("contacts_count")
+            email_record.email_dropped_count = _i0(item.get("email_dropped_count"))
+            email_record.email_delivered_count = _i0(item.get("email_delivered_count"))
+            email_record.email_bounced_count = _i0(item.get("email_bounced_count"))
+            email_record.email_opened_count = _i0(item.get("email_opened_count"))
+            email_record.email_clicked_count = _i0(item.get("email_clicked_count"))
+            email_record.email_unsubscribed_count = _i0(item.get("email_unsubscribed_count"))
+            email_record.email_spam_reported_count = _i0(item.get("email_spam_reported_count"))
+            email_record.email_delivered_rate = _f0(item.get("email_delivered_rate"))
+            email_record.email_opened_rate = _f0(item.get("email_opened_rate"))
+            email_record.email_clicked_rate = _f0(item.get("email_clicked_rate"))
+            email_record.email_spam_reported_rate = _f0(item.get("email_spam_reported_rate"))
+            email_record.contacts_count = _i0(item.get("contacts_count"))
             
         db.commit()
     except Exception as e:
@@ -219,9 +241,9 @@ def get_conversions_analytics(start_date: str, end_date: str) -> Dict[str, Any]:
             conv_record.asset_created_at = datetime.fromisoformat(item.get("asset_created_at").replace("Z", "+00:00"))
             conv_record.asset_updated_at = datetime.fromisoformat(item.get("asset_updated_at").replace("Z", "+00:00"))
             conv_record.assets_type = item.get("assets_type")
-            conv_record.conversion_count = item.get("conversion_count")
-            conv_record.visits_count = int(item.get("visits_count") or 0)
-            conv_record.conversion_rate = item.get("conversion_rate")
+            conv_record.conversion_count = _i0(item.get("conversion_count"))
+            conv_record.visits_count = _i0(item.get("visits_count"))
+            conv_record.conversion_rate = _f0(item.get("conversion_rate"))
             
         db.commit()
     except Exception as e:
@@ -351,4 +373,3 @@ def get_workflows() -> Dict[str, Any]:
         db.close()
         
     return data
-

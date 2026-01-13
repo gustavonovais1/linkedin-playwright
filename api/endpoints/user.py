@@ -9,6 +9,16 @@ router = APIRouter()
 
 @router.post("/register")
 def register(name: str = Body(...), email: str = Body(...), password: str = Body(...), role: str = Body("user")):
+    """
+    Registro de novo usuário.
+    Parâmetros:
+    - name: Nome completo.
+    - email: E-mail (único).
+    - password: Senha em texto (hash gerado internamente).
+    - role: Perfil (user/admin).
+    Retorna:
+    - Dados básicos do usuário criado.
+    """
     s = get_session()
     try:
         existing = s.query(User).filter(User.email == email).first()
@@ -25,6 +35,13 @@ def register(name: str = Body(...), email: str = Body(...), password: str = Body
 
 @router.post("/login")
 def login(email: str = Body(...), password: str = Body(...)):
+    """
+    Login tradicional via corpo JSON.
+    Parâmetros:
+    - email, password.
+    Retorna:
+    - access_token (Bearer) válido por 12h.
+    """
     s = get_session()
     try:
         u: Optional[User] = s.query(User).filter(User.email == email).first()
@@ -39,6 +56,13 @@ def login(email: str = Body(...), password: str = Body(...)):
 
 @router.post("/token")
 def token(form_data: OAuth2PasswordRequestForm = Depends()):
+    """
+    OAuth2 Password (Swagger/clients).
+    Parâmetros:
+    - form username (email) e password.
+    Retorna:
+    - access_token (Bearer) válido por 12h.
+    """
     s = get_session()
     try:
         u: Optional[User] = s.query(User).filter(User.email == form_data.username).first()
@@ -52,10 +76,20 @@ def token(form_data: OAuth2PasswordRequestForm = Depends()):
         s.close()
 @router.get("/me")
 def me(user: User = Depends(get_current_user_oauth)):
+    """
+    Perfil do usuário autenticado.
+    Retorna:
+    - id, name, email, role.
+    """
     return {"id": user.id, "name": user.name, "email": user.email, "role": user.role}
 
 @router.get("/")
 def list_users(user: User = Depends(get_current_user_oauth)):
+    """
+    Lista usuários (apenas admin).
+    Retorna:
+    - Array com id, name, email, role.
+    """
     if (user.role or "").lower() != "admin":
         raise HTTPException(status_code=403, detail={"error":"forbidden"})
     s = get_session()

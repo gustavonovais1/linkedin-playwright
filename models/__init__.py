@@ -27,6 +27,15 @@ from .models_linkedin import (
     Update,
     Visitor
 )
+from .models_viva_engage import (
+    VEToken,
+    VECommunity,
+    VEReportGroupsActivityCounts,
+    VEReportGroupsActivityDetail,
+    VEReportUserActivityDetail,
+    VEReportDeviceUsageUserDetail,
+    VEReportUserActivityCounts
+)
 
 __all__ = [
     "User",
@@ -49,5 +58,12 @@ __all__ = [
     "Competitor",
     "Follower",
     "Update",
-    "Visitor"
+    "Visitor",
+    "VEToken",
+    "VECommunity",
+    "VEReportGroupsActivityCounts",
+    "VEReportGroupsActivityDetail",
+    "VEReportUserActivityDetail",
+    "VEReportDeviceUsageUserDetail",
+    "VEReportUserActivityCounts"
 ]

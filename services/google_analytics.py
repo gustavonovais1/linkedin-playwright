@@ -172,7 +172,10 @@ class GA4Service:
 
     def _to_number(self, name: str, value: str):
         if value is None or value == "":
-            return None
+            lname = name.lower()
+            if any(k in lname for k in ["rate", "per", "average", "revenue", "amount", "discount"]):
+                return 0.0
+            return 0
         lname = name.lower()
         try:
             if any(k in lname for k in ["rate", "per", "average", "revenue", "amount", "discount"]):
@@ -186,7 +189,10 @@ class GA4Service:
             try:
                 return float(value)
             except Exception:
-                return None
+                lname = name.lower()
+                if any(k in lname for k in ["rate", "per", "average", "revenue", "amount", "discount"]):
+                    return 0.0
+                return 0
 
     def _upsert_rows(self, model_cls, key_dims: List[str], rows: List[dict], start_date: str, end_date: str):
         s = get_session()

@@ -54,16 +54,16 @@ def _read_excel_structured(path, kind):
 
 def _to_int(s):
     try:
-        return int(s) if pd.notna(s) else None
+        return int(s) if pd.notna(s) else 0
     except Exception:
         try:
             return int(float(str(s).replace("%", "").replace(",", ".")))
         except Exception:
-            return None
+            return 0
 
 def _to_rate(s):
     if pd.isna(s):
-        return None
+        return 0.0
     try:
         if isinstance(s, str) and "%" in s:
             v = float(s.replace("%", "").replace(",", ".")) / 100.0
@@ -73,7 +73,7 @@ def _to_rate(s):
         try:
             return float(str(s).replace(",", "."))
         except Exception:
-            return None
+            return 0.0
 
 def _to_date(s):
     if pd.isna(s):
