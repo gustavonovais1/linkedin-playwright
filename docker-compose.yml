@@ -14,7 +14,7 @@ services:
       - HEADLESS=false
       - DOWNLOADS_DIR=/app/linkedin/downloads
       - APP_MODULE=bot.linkedin.src.main
-      - DB_HOST=db
+      - DB_HOST=${POSTGRES_HOST}
       - DB_NAME=${POSTGRES_DB}
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
@@ -38,7 +38,7 @@ services:
       - META_CLIENT_ID=${META_CLIENT_ID}
       - META_CLIENT_SECRET=${META_CLIENT_SECRET}
       - PORT=8000
-      - POSTGRES_HOST=db
+      - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
