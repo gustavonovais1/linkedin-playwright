@@ -31,7 +31,7 @@ def _find_header_row(df: pd.DataFrame, kind: str | None) -> int | None:
                 if any(x.lower() == "page" for x in row):
                     return i
             else:
-                if any(x.lower() == "data" for x in row):
+                if any(x.lower() in ("data", "date") for x in row):
                     return i
         return None
     except Exception:
@@ -75,22 +75,71 @@ def _to_rate(s):
         except Exception:
             return 0.0
 
-def _to_date(s):
+def _detect_dayfirst(series: pd.Series) -> bool:
+    """
+    Detects if the date format is DMY (dayfirst=True) or MDY (dayfirst=False).
+    Returns True for DMY, False for MDY.
+    """
+    dmy_score = 0
+    mdy_score = 0
+    
+    for val in series:
+        if pd.isna(val):
+            continue
+        s = str(val).strip()
+        # Match XX/XX/XXXX or XX-XX-XXXX
+        m = re.match(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+.*)?$", s)
+        if m:
+            a, b = int(m.group(1)), int(m.group(2))
+            if a > 12:
+                dmy_score += 1 # A must be day -> DMY
+            if b > 12:
+                mdy_score += 1 # B must be day -> MDY
+
+    # Prioritize detected format
+    if dmy_score > 0 and mdy_score == 0:
+        return True
+    if mdy_score > 0 and dmy_score == 0:
+        return False
+        
+    # Default to MDY (False) if ambiguous or mixed, as per user context (LinkedIn US export usually MDY)
+    return False
+
+def _to_date(s, dayfirst=False):
     if pd.isna(s):
         return None
-    if isinstance(s, datetime.date):
+    if isinstance(s, datetime.date) and not isinstance(s, datetime.datetime):
         return s
     if isinstance(s, datetime.datetime):
         return s.date()
-    for fmt in ["%d/%m/%Y", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S"]:
+    
+    s_str = str(s).strip()
+    
+    # ISO format YYYY-MM-DD
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", s_str):
         try:
-            return datetime.datetime.strptime(str(s), fmt).date()
+            return datetime.date.fromisoformat(s_str)
         except Exception:
-            continue
+            return None
+
+    # Common formats XX/XX/XXXX
+    if re.match(r"^\d{1,2}[/-]\d{1,2}[/-]\d{4}(?:\s+.*)?$", s_str):
+        try:
+            dt = pd.to_datetime(s_str, dayfirst=dayfirst)
+            return dt.date()
+        except Exception:
+            return None
+            
+    # Try numeric (Excel serial)
     try:
-        return pd.to_datetime(s).date()
+        # Check if strictly numeric to avoid loose parsing of strings like "Jan 2026"
+        float(s_str)
+        dt = pd.to_datetime(s)
+        return dt.date()
     except Exception:
-        return None
+        pass
+
+    return None
 
 def _parse_period_from_filename(fn: str) -> str:
     m = re.search(r"_(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{4})", fn)
@@ -102,6 +151,17 @@ def _parse_period_from_filename(fn: str) -> str:
             pass
     now = datetime.datetime.utcnow()
     return _month_period_string(now)
+
+def _extract_range_from_filename(fn: str):
+    m = re.search(r"_(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{4})", fn)
+    if not m:
+        return None, None
+    try:
+        start = datetime.date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+        end = datetime.date(int(m.group(6)), int(m.group(5)), int(m.group(4)))
+        return start, end
+    except Exception:
+        return None, None
 
 def _process_competitors(df, s, source_name: str):
     period = _parse_period_from_filename(source_name)
@@ -141,9 +201,10 @@ def _process_competitors(df, s, source_name: str):
     s.commit()
     return cnt
 
-def _process_followers(df, s):
+def _process_followers(df, s, source_name: str = ""):
     mapping = {
         "Data": "date",
+        "Date": "date",
         "Seguidores patrocinados": "sponsored_followers",
         "Seguidores orgânicos": "organic_followers",
         "Seguidores convidados automaticamente": "auto_invited_followers",
@@ -151,7 +212,20 @@ def _process_followers(df, s):
     }
     cols = {k: v for k, v in mapping.items() if k in df.columns}
     dfo = df.rename(columns=cols)
-    dfo["date"] = dfo.get("date", pd.Series(dtype="object")).apply(_to_date)
+    raw_dates = dfo.get("date", pd.Series(dtype="object"))
+    is_dayfirst = _detect_dayfirst(raw_dates)
+    dfo["date"] = raw_dates.apply(lambda x: _to_date(x, dayfirst=is_dayfirst))
+    # filtra datas válidas e dentro do intervalo do arquivo, se disponível
+    try:
+        dfo = dfo.dropna(subset=["date"])
+    except Exception:
+        pass
+    start, end = _extract_range_from_filename(source_name or "")
+    if start and end:
+        try:
+            dfo = dfo[(dfo["date"] >= start) & (dfo["date"] <= end)]
+        except Exception:
+            pass
     dfo["sponsored_followers"] = dfo.get("sponsored_followers", pd.Series(dtype="float")).apply(_to_int)
     dfo["organic_followers"] = dfo.get("organic_followers", pd.Series(dtype="float")).apply(_to_int)
     dfo["auto_invited_followers"] = dfo.get("auto_invited_followers", pd.Series(dtype="float")).apply(_to_int)
@@ -180,9 +254,10 @@ def _process_followers(df, s):
     s.commit()
     return cnt
 
-def _process_updates(df, s):
+def _process_updates(df, s, source_name: str = ""):
     mapping = {
         "Data": "date",
+        "Date": "date",
         "Impressões (orgânicas)": "impressions_organic",
         "Impressões (patrocinadas)": "impressions_sponsored",
         "Impressões (total)": "impressions_total",
@@ -205,7 +280,19 @@ def _process_updates(df, s):
     }
     cols = {k: v for k, v in mapping.items() if k in df.columns}
     dfo = df.rename(columns=cols)
-    dfo["date"] = dfo.get("date", pd.Series(dtype="object")).apply(_to_date)
+    raw_dates = dfo.get("date", pd.Series(dtype="object"))
+    is_dayfirst = _detect_dayfirst(raw_dates)
+    dfo["date"] = raw_dates.apply(lambda x: _to_date(x, dayfirst=is_dayfirst))
+    try:
+        dfo = dfo.dropna(subset=["date"])
+    except Exception:
+        pass
+    start, end = _extract_range_from_filename(source_name or "")
+    if start and end:
+        try:
+            dfo = dfo[(dfo["date"] >= start) & (dfo["date"] <= end)]
+        except Exception:
+            pass
     for k in [
         "impressions_organic",
         "impressions_sponsored",
@@ -273,9 +360,10 @@ def _process_updates(df, s):
     s.commit()
     return cnt
 
-def _process_visitors(df, s):
+def _process_visitors(df, s, source_name: str = ""):
     mapping = {
         "Data": "date",
+        "Date": "date",
         "Visualizações da página Visão geral (computadores)": "overview_page_views_desktop",
         "Visualizações da página Visão geral (dispositivos móveis)": "overview_page_views_mobile",
         "Visualizações da página Visão geral (total)": "overview_page_views_total",
@@ -303,7 +391,19 @@ def _process_visitors(df, s):
     }
     cols = {k: v for k, v in mapping.items() if k in df.columns}
     dfo = df.rename(columns=cols)
-    dfo["date"] = dfo.get("date", pd.Series(dtype="object")).apply(_to_date)
+    raw_dates = dfo.get("date", pd.Series(dtype="object"))
+    is_dayfirst = _detect_dayfirst(raw_dates)
+    dfo["date"] = raw_dates.apply(lambda x: _to_date(x, dayfirst=is_dayfirst))
+    try:
+        dfo = dfo.dropna(subset=["date"])
+    except Exception:
+        pass
+    start, end = _extract_range_from_filename(source_name or "")
+    if start and end:
+        try:
+            dfo = dfo[(dfo["date"] >= start) & (dfo["date"] <= end)]
+        except Exception:
+            pass
     for k in [
         "overview_page_views_desktop",
         "overview_page_views_mobile",
@@ -407,11 +507,11 @@ def ingest_downloads(downloads_dir):
             if kind == "competitors":
                 processed = _process_competitors(df, s, fn)
             elif kind == "followers":
-                processed = _process_followers(df, s)
+                processed = _process_followers(df, s, fn)
             elif kind == "updates":
-                processed = _process_updates(df, s)
+                processed = _process_updates(df, s, fn)
             elif kind == "visitors":
-                processed = _process_visitors(df, s)
+                processed = _process_visitors(df, s, fn)
         except Exception:
             processed = 0
         if processed > 0:
