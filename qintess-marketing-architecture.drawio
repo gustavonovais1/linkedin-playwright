@@ -1,0 +1,185 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" version="29.3.8" pages="2">
+  <diagram id="qintess-arch" name="Arquitetura">
+    <mxGraphModel dx="1965" dy="1128" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="XSX5aATSUa8GmST7ebMr-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="" vertex="1">
+          <mxGeometry height="700" width="790" x="1300" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="XSX5aATSUa8GmST7ebMr-15" parent="XSX5aATSUa8GmST7ebMr-6" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="erviço externo" vertex="1">
+          <mxGeometry height="30" width="108.63" x="340.68" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="g-compose" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#b3b3b3;dashed=1" value="" vertex="1">
+          <mxGeometry height="700" width="1240" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-fastapi" parent="g-compose" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" value="FastAPI App&#xa;[main.py, api/api.py]&#xa;Prefixes: /ig, /ll, /ga, /rd, /ve, /user" vertex="1">
+          <mxGeometry height="160" width="300" x="80" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-linkedin" parent="g-compose" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" value="LinkedIn Bot&#xa;[bot.linkedin.src.main]&#xa;Playwright headful" vertex="1">
+          <mxGeometry height="160" width="300" x="80" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-vnc" parent="g-compose" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6" value="VNC / noVNC&#xa;:5900 / :6080&#xa;[start.sh]" vertex="1">
+          <mxGeometry height="120" width="300" x="80" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="db" parent="g-compose" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00" value="PostgreSQL 13&#xa;Schemas: instagram, linkedin, google_analytics, user, rd_station, viva_engage&#xa;[core/db.py]" vertex="1">
+          <mxGeometry height="180" width="360" x="540" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="e-fastapi-bot" edge="1" parent="g-compose" source="svc-fastapi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontColor=#333333" target="svc-linkedin" value="/ll/start">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-bot-db" edge="1" parent="g-compose" source="svc-linkedin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="db" value="Ingestão (.xlsx)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="390" y="325" as="sourcePoint" />
+            <mxPoint x="710" y="375" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-bot-vnc" edge="1" parent="g-compose" source="svc-linkedin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;fontColor=#333333" target="svc-vnc" value="Sessão gráfica">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-auth-db" edge="1" parent="g-compose" source="svc-fastapi" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontColor=#333333;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" target="db" value="JWT + OAuth2&#xa;[core/auth.py]">
+          <mxGeometry relative="1" x="-0.0769" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="450" y="300" />
+            </Array>
+            <mxPoint x="380" y="163.6" as="sourcePoint" />
+            <mxPoint x="729" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="AHg8DJx_wg39U6nx9TqZ-2" parent="g-compose" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Docker Compose" vertex="1">
+          <mxGeometry height="30" width="110" x="630" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="XSX5aATSUa8GmST7ebMr-3" edge="1" parent="g-compose" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontColor=#333333;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ext-meta" value="/ig/*">
+          <mxGeometry relative="1" x="-0.2966" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="380" y="170" />
+              <mxPoint x="1080" y="170" />
+              <mxPoint x="1080" y="568" />
+            </Array>
+            <mxPoint x="380" y="180" as="sourcePoint" />
+            <mxPoint x="1350" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-fastapi-ga4" edge="1" parent="1" source="svc-fastapi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontColor=#333333;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ext-ga4" value="/ga/analytics/*">
+          <mxGeometry relative="1" x="-0.1304" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1250" y="160" />
+              <mxPoint x="1250" y="298" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-fastapi-rd" edge="1" parent="1" source="svc-fastapi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontColor=#333333" target="ext-rd" value="/rd/*">
+          <mxGeometry relative="1" x="-0.2256" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1180" y="180" />
+              <mxPoint x="1180" y="448" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-fastapi-msgraph" edge="1" parent="1" source="svc-fastapi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontColor=#333333;exitX=0.999;exitY=0.196;exitDx=0;exitDy=0;exitPerimeter=0;" target="ext-msgraph" value="/ve/*">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666" value="Legenda:&#xa;• Azul: Serviço interno (API)&#xa;• Verde: Bot/automação&#xa;• Roxo: Interface VNC&#xa;• Laranja: Banco de dados&#xa;• Amarelo: Serviço externo" vertex="1">
+          <mxGeometry height="80" width="2070" x="40" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-msgraph" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="Microsoft Graph (Viva Engage)&#xa;Client Credentials" vertex="1">
+          <mxGeometry height="120" width="300" x="1343" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-linkedin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="LinkedIn Web (Analytics)&#xa;Navegação + Exportações" vertex="1">
+          <mxGeometry height="120" width="306" x="1730" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-meta" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="Meta Graph API (Instagram)&#xa;PAGE_ID, IG_ACCOUNT_ID" vertex="1">
+          <mxGeometry height="120" width="306" x="1340" y="538" as="geometry" />
+        </mxCell>
+        <mxCell id="XSX5aATSUa8GmST7ebMr-4" edge="1" parent="1" source="ext-ga4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ext-rd" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-ga4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="Google Analytics Data API (GA4)&#xa;property_id" vertex="1">
+          <mxGeometry height="120" width="306" x="1340" y="238" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-rd" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" value="RD Station Platform API&#xa;OAuth 2.0" vertex="1">
+          <mxGeometry height="120" width="306" x="1340" y="388" as="geometry" />
+        </mxCell>
+        <mxCell id="e-bot-extlinkedin" edge="1" parent="1" source="svc-linkedin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontColor=#333333;exitX=0.689;exitY=1.015;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ext-linkedin" value="Playwright">
+          <mxGeometry relative="1" x="-0.3263" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="327" y="540" />
+              <mxPoint x="1040" y="540" />
+              <mxPoint x="1040" y="680" />
+              <mxPoint x="1880" y="680" />
+              <mxPoint x="1880" y="660" />
+            </Array>
+            <mxPoint x="380" y="490" as="sourcePoint" />
+            <mxPoint x="2882.4" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="qintess-slide" name="Resumo">
+    <mxGraphModel dx="1572" dy="902" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="s0" />
+        <mxCell id="s1" parent="s0" />
+        <mxCell id="s-bg" parent="s1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d0d0d0" value="" vertex="1">
+          <mxGeometry height="680" width="1290" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s-title" parent="s1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=24;fontColor=#000000" value="Qintess Marketing — Resumo do Projeto" vertex="1">
+          <mxGeometry height="40" width="1000" x="80" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="s-subtitle" parent="s1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=16;fontColor=#333333" value="Automação de coleta (LinkedIn) e APIs para métricas (Instagram, GA4, RD Station, Viva Engage)" vertex="1">
+          <mxGeometry height="30" width="1000" x="80" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="s-left" parent="s1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7f9fc;strokeColor=#c0d3eb" value="" vertex="1">
+          <mxGeometry height="460" width="560" x="80" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="s-left-title" parent="s-left" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=18;fontColor=#0b5394" value="Objetivo" vertex="1">
+          <mxGeometry height="30" width="520" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s-left-body1" parent="s-left" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=15;fontColor=#000000" value="• Automatizar coleta de métricas do LinkedIn&#xa;• Expor APIs para consulta de métricas (Instagram, GA4, RD Station, Viva Engage)&#xa;• Persistir dados centralizados em PostgreSQL" vertex="1">
+          <mxGeometry height="100" width="520" x="20" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s-left-title2" parent="s-left" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=18;fontColor=#0b5394" value="Componentes" vertex="1">
+          <mxGeometry height="30" width="520" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="s-left-body2" parent="s-left" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=15;fontColor=#000000" value="• FastAPI (prefixos: /ig, /ll, /ga, /rd, /ve, /user)&#xa;• Bot LinkedIn (Playwright headful) com VNC/noVNC&#xa;• PostgreSQL (schemas: instagram, linkedin, google_analytics, user, rd_station, viva_engage)" vertex="1">
+          <mxGeometry height="130" width="520" x="20" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right" parent="s1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9f0;strokeColor=#e6c78a" value="" vertex="1">
+          <mxGeometry height="460" width="560" x="720" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right-title1" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=18;fontColor=#9a6b00" value="Integrações" vertex="1">
+          <mxGeometry height="30" width="520" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right-body1" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=15;fontColor=#000000" value="• Instagram (Meta Graph API)&#xa;• Google Analytics (GA4)&#xa;• RD Station Platform API&#xa;• Microsoft Graph (Viva Engage)" vertex="1">
+          <mxGeometry height="110" width="520" x="20" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right-title2" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=18;fontColor=#9a6b00" value="Fluxos Principais" vertex="1">
+          <mxGeometry height="30" width="520" x="20" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right-body2" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=15;fontColor=#000000" value="• API consulta métricas externas e persiste&#xa;• /ll/start aciona bot para navegação/exportação&#xa;• Bot ingere relatórios para PostgreSQL&#xa;• Autenticação via JWT + OAuth2" vertex="1">
+          <mxGeometry height="130" width="520" x="20" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right-title3" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=18;fontColor=#9a6b00" value="Benefícios" vertex="1">
+          <mxGeometry height="30" width="520" x="20" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="s-right-body3" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=15;fontColor=#000000" value="• Dados centralizados e confiáveis&#xa;• Automação reduz trabalho manual&#xa;• Visualização operacional via VNC/noVNC&#xa;• Extensível para novas fontes" vertex="1">
+          <mxGeometry height="80" width="520" x="20" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="s-footer" parent="s1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=13;fontColor=#666666" value="Endpoints: /ig/*, /ll/start, /ga/analytics/*, /rd/*, /ve/*&#xa;Portas: API :8000, VNC :5900, noVNC :6080&#xa;Execução: docker compose up --build marketing | linkedin" vertex="1">
+          <mxGeometry height="60" width="1100" x="80" y="620" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

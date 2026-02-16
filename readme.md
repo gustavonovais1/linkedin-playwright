@@ -8,7 +8,7 @@ Projeto para automação de coleta de métricas do LinkedIn e exposição de API
 
 ## Visão Geral
 - Serviço `linkedin`: executa o módulo `bot.linkedin.src.main` que navega na área de analytics da empresa no LinkedIn, exporta relatórios (Excel) e faz ingestão para o banco (`docker-compose.yml:4-22`, `Dockerfile:18-25`, `bot\\linkedin\\src\\main.py:10-20`).
-- Serviço `instagram`: inicializa a API FastAPI em `:8000` (`main.py:4-12`) e publica endpoints sob prefixos `/ig` e `/ll` (`api\\api.py:5-7`). O endpoint `/ll/start` aciona o bot do LinkedIn de forma programática (`api\\endpoints\\linkedin.py:6-8`).
+- Serviço `marketing`: inicializa a API FastAPI em `:8000` (`main.py:4-12`) e publica endpoints sob prefixos `/ig`, `/ll`, `/ga`, `/rd`, `/ve`, `/user` (`api\\api.py:1-15`). O endpoint `/ll/start` aciona o bot do LinkedIn de forma programática (`api\\endpoints\\linkedin.py:6-18`).
 - Interface visual: VNC no `:5900` e noVNC no `:6080` são inicializados pelo script de entrada (`start.sh:9-13`). Útil para acompanhar login e navegação do bot.
 
 
@@ -34,9 +34,9 @@ Os serviços leem essas variáveis via `env_file: .env` e `environment` (`docker
 docker compose up --build linkedin
 ```
 
-- API + Swagger (Instagram + endpoint para iniciar bot):
+- API + Swagger (toda a API de marketing):
 ```
-docker compose up --build instagram
+docker compose up --build marketing
 ```
 
 Observações:
@@ -52,7 +52,7 @@ Observações:
 
 
 ## Swagger da API
-- Com o serviço `instagram` ativo, acesse:
+- Com o serviço `marketing` ativo, acesse:
   - Swagger UI: `http://localhost:8000/docs`
   - ReDoc: `http://localhost:8000/redoc`
 
@@ -283,7 +283,7 @@ curl -X POST "http://localhost:8000/ll/start?segments=updates,visitors,followers
 
 ## Dicas e Solução de Problemas
 - `HEADLESS=false` mantém o navegador visível (VNC) para depuração (`Dockerfile:13-20`, `docker-compose.yml:14`, `docker-compose.yml:46-48`).
-- Se `:8000/docs` não abrir, verifique se o serviço `instagram` está ativo (`docker-compose.yml:26-48`, `main.py:13-20`).
+- Se `:8000/docs` não abrir, verifique se o serviço `marketing` está ativo (`docker-compose.yml:26-48`, `main.py:13-20`).
 - Captcha: opcionalmente configure `ANTI_CAPTCHA_KEY` para auxiliar resolução de reCAPTCHA (`bot\\linkedin\\src\\auth.py:186-211`, `bot\\linkedin\\src\\auth.py:436-450`, `bot\\linkedin\\src\\auth.py:494-568`).
 
 
