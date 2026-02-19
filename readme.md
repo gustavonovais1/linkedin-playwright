@@ -8,7 +8,7 @@ Projeto para automação de coleta de métricas do LinkedIn e exposição de API
 
 ## Visão Geral
 - Serviço `linkedin`: executa o módulo `bot.linkedin.src.main` que navega na área de analytics da empresa no LinkedIn, exporta relatórios (Excel) e faz ingestão para o banco (`docker-compose.yml:4-22`, `Dockerfile:18-25`, `bot\\linkedin\\src\\main.py:10-20`).
-- Serviço `marketing`: inicializa a API FastAPI em `:8000` (`main.py:4-12`) e publica endpoints sob prefixos `/ig`, `/ll`, `/ga`, `/rd`, `/ve`, `/user` (`api\\api.py:1-15`). O endpoint `/ll/start` aciona o bot do LinkedIn de forma programática (`api\\endpoints\\linkedin.py:6-18`).
+- Serviço `marketing`: inicializa a API FastAPI em `:8000` internamente (`main.py:4-12`) e a expõe em `:8080` no host (`docker-compose.yml:25-30`). Publica endpoints sob prefixos `/ig`, `/ll`, `/ga`, `/rd`, `/ve`, `/user` (`api\\api.py:1-15`). O endpoint `/ll/start` aciona o bot do LinkedIn de forma programática (`api\\endpoints\\linkedin.py:6-18`).
 - Interface visual: VNC no `:5900` e noVNC no `:6080` são inicializados pelo script de entrada (`start.sh:9-13`). Útil para acompanhar login e navegação do bot.
 
 
@@ -53,8 +53,8 @@ Observações:
 
 ## Swagger da API
 - Com o serviço `marketing` ativo, acesse:
-  - Swagger UI: `http://localhost:8000/docs`
-  - ReDoc: `http://localhost:8000/redoc`
+  - Swagger UI: `http://localhost:8080/docs`
+  - ReDoc: `http://localhost:8080/redoc`
 
 Principais endpoints:
 - `GET /ig/profile` — perfil do Instagram (`api\\endpoints\\instagram.py:6-8`)
@@ -82,16 +82,16 @@ Principais endpoints:
 - Exemplos:
 ```
 # Perfil
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/profile?fields=id,username,name,followers_count"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ig/profile?fields=id,username,name,followers_count"
 
 # Mídias de vídeo no período
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/media?fields=id,media_type,timestamp&media_type=VIDEO&limit=25&since=1730428800&until=1733110800"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ig/media?fields=id,media_type,timestamp&media_type=VIDEO&limit=25&since=1730428800&until=1733110800"
 
 # Insights de posts
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/insights/posts?media_id=<MID>&metric=views,reach,likes,comments,shares,total_interactions,reposts"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ig/insights/posts?media_id=<MID>&metric=views,reach,likes,comments,shares,total_interactions,reposts"
 
 # Troca de token
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/oauth/exchange_token?fb_exchange_token=<TOKEN_CURTO>"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ig/oauth/exchange_token?fb_exchange_token=<TOKEN_CURTO>"
 ```
 
 ## LinkedIn Bot
@@ -109,7 +109,7 @@ curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/oauth/exchange_t
 - Exemplos:
 ```
 # Iniciar coleta de todos os segmentos
-curl -X POST -H "Authorization: Bearer <jwt>" "http://localhost:8000/ll/start?segments=updates,visitors,followers,competitors"
+curl -X POST -H "Authorization: Bearer <jwt>" "http://localhost:8080/ll/start?segments=updates,visitors,followers,competitors"
 ```
 
 ## Viva Engage (Microsoft Graph)
@@ -139,13 +139,13 @@ curl -X POST -H "Authorization: Bearer <jwt>" "http://localhost:8000/ll/start?se
 - Exemplos:
 ```
 # Token
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/token"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ve/token"
 
 # Comunidades
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/communities?select=displayName,groupId&top=50"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ve/communities?select=displayName,groupId&top=50"
 
 # Relatório Yammer (contagens da rede)
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/reports/yammer/groups/activity-counts?period=D30"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ve/reports/yammer/groups/activity-counts?period=D30"
 ```
 
 ## Google Analytics (GA4)
@@ -193,13 +193,13 @@ curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ve/reports/yammer/g
 - Exemplos:
 ```
 # Engajamento
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ga/analytics/engagement?metrics=engagedSessions,engagementRate&dimensions=date,deviceCategory&start_date=2025-11-01&end_date=2025-12-01"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ga/analytics/engagement?metrics=engagedSessions,engagementRate&dimensions=date,deviceCategory&start_date=2025-11-01&end_date=2025-12-01"
 
 # E-commerce Itens
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ga/analytics/ecommerce/items?metrics=itemsPurchased,itemsViewed&dimensions=date,itemId,itemName"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ga/analytics/ecommerce/items?metrics=itemsPurchased,itemsViewed&dimensions=date,itemId,itemName"
 
 # Ads (advertiser)
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ga/analytics/ads?metrics=advertiserAdClicks,advertiserAdImpressions&dimensions=date,campaignName,campaignId"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ga/analytics/ads?metrics=advertiserAdClicks,advertiserAdImpressions&dimensions=date,campaignName,campaignId"
 ```
 
 
@@ -208,7 +208,7 @@ curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ga/analytics/ads?me
 - Variáveis de ambiente obrigatórias: `RD_ACCOUNT_ID`, `RD_CLIENT_SECRET`.
 - Fluxo OAuth 2.0:
   1. Acesse `GET /rd/auth` no navegador. Isso redirecionará para o login do RD Station.
-  2. Após autorizar, o RD Station redirecionará para `http://localhost:8000/rd/oauth/callback` com o código.
+  2. Após autorizar, o RD Station redirecionará para `http://localhost:8080/rd/oauth/callback` com o código.
   3. O sistema captura o `code`, troca pelo `access_token` e salva no banco de dados (`rd_station.rd_tokens`).
 - Endpoints principais:
   - `GET /rd/auth` — Inicia o processo de autenticação (redirecionamento).
@@ -221,10 +221,10 @@ curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ga/analytics/ads?me
 - Exemplos:
 ```
 # Analytics de E-mail
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/rd/analytics/emails?start_date=2025-10-01&end_date=2025-10-31"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/rd/analytics/emails?start_date=2025-10-01&end_date=2025-10-31"
 
 # Listar Segmentações
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/rd/segmentations"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/rd/segmentations"
 ```
 
 
@@ -242,35 +242,35 @@ Fluxo no Swagger:
 Exemplos:
 ```
 # Registrar admin
-curl -X POST "http://localhost:8000/user/register" -H "Content-Type: application/json" -d "{\"name\":\"Admin\",\"email\":\"admin@example.com\",\"password\":\"pass\",\"role\":\"admin\"}"
+curl -X POST "http://localhost:8080/user/register" -H "Content-Type: application/json" -d "{\"name\":\"Admin\",\"email\":\"admin@example.com\",\"password\":\"pass\",\"role\":\"admin\"}"
 
 # Obter token (form OAuth2)
-curl -X POST "http://localhost:8000/user/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=admin@example.com&password=pass"
+curl -X POST "http://localhost:8080/user/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=admin@example.com&password=pass"
 
 # Usar token nas rotas protegidas
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/ig/profile"
-curl -H "Authorization: Bearer <jwt>" -X POST "http://localhost:8000/ll/start?segments=updates,visitors"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/ig/profile"
+curl -H "Authorization: Bearer <jwt>" -X POST "http://localhost:8080/ll/start?segments=updates,visitors"
 
 # Somente admin
-curl -H "Authorization: Bearer <jwt>" "http://localhost:8000/user/"
+curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/user/"
 ```
 
 ### Exemplos rápidos:
 ```
 # Swagger
-open http://localhost:8000/docs
+open http://localhost:8080/docs
 
 # Perfil IG
-curl "http://localhost:8000/ig/profile"
+curl "http://localhost:8080/ig/profile"
 
 # Mídias IG (vídeos entre datas)
-curl "http://localhost:8000/ig/media?fields=id,media_type,timestamp&media_type=VIDEO&limit=25&since=1730428800&until=1733110800"
+curl "http://localhost:8080/ig/media?fields=id,media_type,timestamp&media_type=VIDEO&limit=25&since=1730428800&until=1733110800"
 
 # Insights de perfil IG (janela customizada)
-curl "http://localhost:8000/ig/insights/profile?since=1730428800&until=1733110800"
+curl "http://localhost:8080/ig/insights/profile?since=1730428800&until=1733110800"
 
 # Iniciar bot LinkedIn para segmentos
-curl -X POST "http://localhost:8000/ll/start?segments=updates,visitors,followers,competitors"
+curl -X POST "http://localhost:8080/ll/start?segments=updates,visitors,followers,competitors"
 ```
 
 
@@ -283,7 +283,7 @@ curl -X POST "http://localhost:8000/ll/start?segments=updates,visitors,followers
 
 ## Dicas e Solução de Problemas
 - `HEADLESS=false` mantém o navegador visível (VNC) para depuração (`Dockerfile:13-20`, `docker-compose.yml:14`, `docker-compose.yml:46-48`).
-- Se `:8000/docs` não abrir, verifique se o serviço `marketing` está ativo (`docker-compose.yml:26-48`, `main.py:13-20`).
+- Se `:8080/docs` não abrir, verifique se o serviço `marketing` está ativo (`docker-compose.yml:26-48`, `main.py:13-20`).
 - Captcha: opcionalmente configure `ANTI_CAPTCHA_KEY` para auxiliar resolução de reCAPTCHA (`bot\\linkedin\\src\\auth.py:186-211`, `bot\\linkedin\\src\\auth.py:436-450`, `bot\\linkedin\\src\\auth.py:494-568`).
 
 

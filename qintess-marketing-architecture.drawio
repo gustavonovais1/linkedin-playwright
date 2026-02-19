@@ -176,7 +176,7 @@
         <mxCell id="s-right-body3" parent="s-right" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=15;fontColor=#000000" value="• Dados centralizados e confiáveis&#xa;• Automação reduz trabalho manual&#xa;• Visualização operacional via VNC/noVNC&#xa;• Extensível para novas fontes" vertex="1">
           <mxGeometry height="80" width="520" x="20" y="410" as="geometry" />
         </mxCell>
-        <mxCell id="s-footer" parent="s1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=13;fontColor=#666666" value="Endpoints: /ig/*, /ll/start, /ga/analytics/*, /rd/*, /ve/*&#xa;Portas: API :8000, VNC :5900, noVNC :6080&#xa;Execução: docker compose up --build marketing | linkedin" vertex="1">
+        <mxCell id="s-footer" parent="s1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fontSize=13;fontColor=#666666" value="Endpoints: /ig/*, /ll/start, /ga/analytics/*, /rd/*, /ve/*&#xa;Portas: API :8080, VNC :5900, noVNC :6080&#xa;Execução: docker compose up --build marketing | linkedin" vertex="1">
           <mxGeometry height="60" width="1100" x="80" y="620" as="geometry" />
         </mxCell>
       </root>
