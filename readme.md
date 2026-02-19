@@ -229,10 +229,11 @@ curl -H "Authorization: Bearer <jwt>" "http://localhost:8080/rd/segmentations"
 
 
 ## Usuários e Autenticação
-- Registro: `POST /user/register` cria usuário com `name`, `email`, `password`, `role` (`api\\endpoints\\user.py:16-25`).
-- Token para Swagger: `POST /user/token` usa `OAuth2PasswordRequestForm` (`username`=email, `password`) e retorna JWT (`api\\endpoints\\user.py:33-46`).
+- Registro: `POST /user/register` cria usuário com `name`, `email`, `password`, `role` (requer `role=admin`).
+- Token para Swagger: `POST /user/token` usa `OAuth2PasswordRequestForm` (`username`=email, `password`) e retorna JWT.
 - Perfil autenticado: `GET /user/me`.
 - Lista de usuários: `GET /user/` (requer `role=admin`).
+- Remover usuário: `DELETE /user/{id}` (requer `role=admin`).
 - JWT: gerado e validado em `core\\auth.py` com algoritmo `HS256` e segredo `AUTH_SECRET`.
 
 Fluxo no Swagger:
@@ -241,8 +242,15 @@ Fluxo no Swagger:
 
 Exemplos:
 ```
-# Registrar admin
-curl -X POST "http://localhost:8080/user/register" -H "Content-Type: application/json" -d "{\"name\":\"Admin\",\"email\":\"admin@example.com\",\"password\":\"pass\",\"role\":\"admin\"}"
+# Registrar novo usuário (Requer token de Admin)
+curl -X POST "http://localhost:8080/user/register" \
+  -H "Authorization: Bearer <jwt_admin>" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"Novo User\",\"email\":\"user@example.com\",\"password\":\"pass\",\"role\":\"user\"}"
+
+# Remover usuário (Requer token de Admin)
+curl -X DELETE "http://localhost:8080/user/123" \
+  -H "Authorization: Bearer <jwt_admin>"
 
 # Obter token (form OAuth2)
 curl -X POST "http://localhost:8080/user/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=admin@example.com&password=pass"
